@@ -8,7 +8,7 @@ image = None
 
 def enter():
     global image
-    image = load_image('resources/임시title.png')
+    image = load_image('resources/title.png')
 
 
 def exit():
@@ -17,14 +17,6 @@ def exit():
 
 
 def update():
-    # global logo_time
-
-    # if (logo_time > 1.0):
-        # logo_time = 0
-        # game_framework.quit()
-        # game_framework.change_state()
-    #delay(0.01)
-    #logo_time += 0.01
     pass
 
 def draw():

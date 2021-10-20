@@ -1,5 +1,6 @@
 import os
 import random
+import math
 from pico2d import *
 
 import game_framework
@@ -10,12 +11,14 @@ name = "MainState"
 
 BG = None
 Mario = None
+FB = None
+FB2 = None
 MONSTERS = []
-font = None  # font는 뭔지 아직 모름
+font = None
 
 # for move left and right
 is_moving = 0  # idle = 0, moving = -1, 1
-direction = 0  # left = -1, right = 1
+direction = 1  # left = -1, right = 1
 
 # for jump
 is_jumping = 0
@@ -178,9 +181,44 @@ class Killer(Monster):
             self.image.clip_draw(60, 0, 49, 43, self.x, self.y)
 
 
+class Firebar:
+    def __init__(self, x=218, y=340, dir=-1):
+        self.x, self.y = x, y
+        self.frame = 0
+        self.angle = 0
+        self.image = load_image('resources/gray_block.png')
+        self.fire = load_image('resources/fire.png')
+        self.dir = dir
+        self.cnt = 0
+
+    def update(self):
+        if self.dir == -1:
+            self.angle += 2
+            if self.angle >= 360.0:
+                self.angle -= 360.0
+        elif self.dir == 1:
+            self.angle -= 2
+            if self.angle <= 0.0:
+                self.angle += 360.0
+
+        self.frame = (self.cnt) // 20
+        self.cnt += 1
+        if self.cnt >= 79:
+            self.cnt = 0
+
+    def draw(self):
+        dx, dy = math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))
+        self.image.draw(self.x, self.y)
+        for i in range(0,6):
+            self.fire.clip_draw(20 * self.frame, 0, 18, 18, dx * 18 * i + self.x, dy * 18 * i + self.y)
+
+
+class Platform:
+    def __init__(self, x = 600, y = ):
+        self.x, self.y =
 def enter():
     global Mario, BG
-    global MONSTERS
+    global MONSTERS, FB, FB2
     Mario = Character()
     BG = Background()
     MONSTERS.append(Goomba())
@@ -189,16 +227,21 @@ def enter():
         y = random.randint(300, 550)
         dir = random.randint(0, 1)
         MONSTERS.append(Killer(x, y, dir))
+    FB = Firebar()
+    FB2 = Firebar(218+200,340,1)
     BG.set('resources/Background1.png')
 
 
 def exit():
     global Mario, BG
     global MONSTERS
+    global FB, FB2
     del (Mario)
     del (BG)
     for monster in MONSTERS:
         del(monster)
+    del(FB)
+    del(FB2)
 
 
 def pause():
@@ -247,6 +290,8 @@ def update():
     for i in index:
         del MONSTERS[i]
 
+    FB.update()
+    FB2.update()
 
 def draw():
     clear_canvas()
@@ -254,6 +299,8 @@ def draw():
     for monsters in MONSTERS:
         monsters.draw()
     Mario.draw()
+    FB.draw()
+    FB2.draw()
     update_canvas()
 
 
