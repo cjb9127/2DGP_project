@@ -8,6 +8,7 @@ import game_title_state
 Width, Height = 800, 600
 name = "MainState"
 
+
 BG = None
 Mario = None
 font = None
@@ -15,6 +16,9 @@ font = None
 state = 0   # idle = 0, moving = -1, 1
 direction = 0   # left = -1, right = 1
 
+is_jumping = False
+is_bottom = True
+Max_jump = 210 - 20
 
 # Game object
 class Background:
@@ -40,9 +44,30 @@ class Character:
         
     def update(self):
         self.state = state
-        self.frame = (self.frame + 1) % 3  # 프레임 갯수
         self.dir = direction
-        self.x += 4 * self.state
+        self.frame = (self.frame + 1) % 3  # 프레임 갯수
+
+        self.x += 5 * self.state
+        if self.x > Width:
+            self.x = Width
+        elif self.x < 0:
+            self.x = 0
+        self.jump()
+
+    def jump(self):
+        global is_jumping, is_bottom
+        if is_jumping:
+            self.y += 8
+        elif not is_jumping and not is_bottom:
+            self.y -= 8
+
+        if is_jumping and self.y >= (Max_jump + 118):
+            is_jumping = False
+
+        if not is_bottom and self.y <= 118:
+            is_bottom = True
+            self.y = 118
+
 
     def draw(self):  # 이미지 클립
         if self.state == -1:
@@ -51,7 +76,7 @@ class Character:
             self.image.clip_draw(473 + 93 + 93 * self.frame, 0, 57, 52, self.x, self.y)
         elif self.state == 0:
             if self.dir == -1:
-                self.image.clip_draw(473,0,57,52, self.x, self.y)
+                self.image.clip_draw(473, 0, 57, 52, self.x, self.y)
             else:  # self.dir == 1:
                 self.image.clip_draw(473+93, 0, 57, 52, self.x, self.y)
 
@@ -78,10 +103,9 @@ def resume():
 
 
 def handle_events():  # 조작 이벤트
-    global running
-    global state
-    global direction
-    
+    global state, direction  # 좌우 이동
+    global is_jumping, is_bottom  # 점프
+
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -95,6 +119,10 @@ def handle_events():  # 조작 이벤트
             elif event.key == SDLK_RIGHT:  # 오른쪽 키
                 direction = 1
                 state += 1
+            elif event.key == SDLK_UP:  # 위 키
+                if is_bottom:
+                    is_jumping = True
+                    is_bottom = False
         elif event.type == SDL_KEYUP:  # 키를 땔 때 이벤트
             if event.key == SDLK_LEFT:
                 state += 1

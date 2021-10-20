@@ -78,7 +78,6 @@ def pop_state():
         stack[-1].resume()
 
 
-
 def quit():
     global running
     running = False
@@ -93,7 +92,7 @@ def run(start_state):
         stack[-1].handle_events()
         stack[-1].update()
         stack[-1].draw()
-        delay(0.001)
+        delay(0.002)
     # repeatedly delete the top of the stack
     while (len(stack) > 0):
         stack[-1].exit()
