@@ -8,17 +8,17 @@ import game_title_state
 Width, Height = 800, 600
 name = "MainState"
 
-
 BG = None
 Mario = None
 font = None
 
-state = 0   # idle = 0, moving = -1, 1
-direction = 0   # left = -1, right = 1
+state = 0  # idle = 0, moving = -1, 1
+direction = 0  # left = -1, right = 1
 
 is_jumping = False
 is_bottom = True
 Max_jump = 210 - 20
+
 
 # Game object
 class Background:
@@ -36,12 +36,12 @@ class Background:
 
 class Character:
     def __init__(self):
-        self.image = load_image('resources/스프라이트테스트4.png')  # 이미지 이름
-        self.x, self.y = Width // 2, Height // 2 - 200 + 18
+        self.image = load_image('resources/mario.png')  # 이미지 이름
+        self.x, self.y = Width // 2, 117
         self.frame = 0
         self.dir = direction
         self.state = state
-        
+
     def update(self):
         self.state = state
         self.dir = direction
@@ -57,28 +57,38 @@ class Character:
     def jump(self):
         global is_jumping, is_bottom
         if is_jumping:
-            self.y += 8
+            self.y += 7
         elif not is_jumping and not is_bottom:
-            self.y -= 8
+            self.y -= 7
 
         if is_jumping and self.y >= (Max_jump + 118):
             is_jumping = False
 
         if not is_bottom and self.y <= 118:
             is_bottom = True
-            self.y = 118
-
+            self.y = 117
 
     def draw(self):  # 이미지 클립
-        if self.state == -1:
-            self.image.clip_draw(473 - 93 * self.frame, 0, 57, 52, self.x, self.y)
-        elif self.state == 1:
-            self.image.clip_draw(473 + 93 + 93 * self.frame, 0, 57, 52, self.x, self.y)
+        if self.state == -1:  # 왼쪽 달리기 중
+            if self.frame == 0:
+                self.image.clip_draw(300 + self.frame * 60, 0, 49, 50, self.x, self.y)
+            elif self.frame == 1:
+                self.image.clip_draw(300 + self.frame * 60, 0, 37, 50, self.x, self.y)
+            elif self.frame == 2:
+                self.image.clip_draw(300 + self.frame * 60, 0, 43, 50, self.x, self.y)
+        elif self.state == 1:  # 오른쪽 달리기 중
+            if self.frame == 0:
+                self.image.clip_draw(60 + self.frame * 60, 0, 49, 50, self.x, self.y)
+            elif self.frame == 1:
+                self.image.clip_draw(60 + self.frame * 60, 0, 37, 50, self.x, self.y)
+            elif self.frame == 2:
+                self.image.clip_draw(60 + self.frame * 60, 0, 43, 50, self.x, self.y)
         elif self.state == 0:
-            if self.dir == -1:
-                self.image.clip_draw(473, 0, 57, 52, self.x, self.y)
-            else:  # self.dir == 1:
-                self.image.clip_draw(473+93, 0, 57, 52, self.x, self.y)
+            if self.dir == -1:  # 왼쪽을 보고 멈춰 있음
+                self.image.clip_draw(0 + 240, 51, 40, 50, self.x, self.y)
+            else:  # elif self.dir == 1:
+                # 오른쪽을 보고 멈춰있음
+                self.image.clip_draw(0, 51, 40, 50, self.x, self.y)
 
 
 def enter():
@@ -90,8 +100,8 @@ def enter():
 
 def exit():
     global Mario, BG
-    del(Mario)
-    del(BG)
+    del (Mario)
+    del (BG)
 
 
 def pause():
