@@ -22,7 +22,7 @@ is_jumping = 0
 velocity = 5
 mass = 2
 
-# 117
+# 117, 293
 
 # Game object
 class Background:
@@ -152,20 +152,43 @@ class Goomba(Monster):
             self.image.clip_draw(60, 0, 50, 50, self.x, self.y)
 
 
+class Killer(Monster):
+    def __init__(self, x=900, y=410, dir=-1):
+        self.x, self.y = x, y
+        self.dir = dir
+        self.speed = 2
+        self.image = load_image('resources/killer.png')
+
+    def update(self):
+        self.x += self.speed * self.dir
+        if self.x > Width + 25:
+            pass  # 대포가 넘어가면 삭제
+        elif self.x < -25:
+            pass
+
+    def draw(self):
+        if self.dir == -1:
+            self.image.clip_draw(0, 0, 49, 43, self.x, self.y)
+        elif self.dir == 1:
+            self.image.clip_draw(60, 0, 49, 43, self.x, self.y)
+
+
 def enter():
     global Mario, BG
     Mario = Character()
     BG = Background()
     MONSTERS.append(Goomba())
+    MONSTERS.append(Killer())
     BG.set('resources/Background1.png')
 
 
 def exit():
     global Mario, BG
+    global MONSTERS
     del (Mario)
     del (BG)
-    for monsters in MONSTERS:
-        del(monsters)
+    for monster in MONSTERS:
+        del(monster)
 
 def pause():
     pass
@@ -214,4 +237,6 @@ def draw():
         monsters.draw()
     Mario.draw()
     update_canvas()
+
+
 
