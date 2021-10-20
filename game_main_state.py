@@ -13,6 +13,7 @@ BG = None
 Mario = None
 FB = None
 FB2 = None
+PF = None
 MONSTERS = []
 font = None
 
@@ -25,7 +26,7 @@ is_jumping = 0
 velocity = 5
 mass = 2
 
-# 117, 293
+# 122, 293
 
 # Game object
 class Background:
@@ -44,7 +45,7 @@ class Background:
 class Character:
     def __init__(self):
         self.image = load_image('resources/mario.png')  # 이미지 이름
-        self.x, self.y = Width // 2, 117
+        self.x, self.y = Width // 2, 122
         self.frame = 0
         self.dir = direction
         self.isMoving = is_moving
@@ -79,8 +80,8 @@ class Character:
             self.y += round(force)
             self.v -= 0.25  # 점프 높이를 결정하는 v
 
-            if self.y <= 117:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
-                self.y = 117
+            if self.y <= 122:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
+                self.y = 122
                 is_jumping = 0
                 self.v = velocity
 
@@ -129,7 +130,7 @@ class Monster:
 
 
 class Goomba(Monster):
-    def __init__(self, x = -100, y = 117, dir = 1):
+    def __init__(self, x = -100, y = 122, dir = 1):
         self.x, self.y = x, y
         self.dir = dir
         self.speed = 3
@@ -214,11 +215,20 @@ class Firebar:
 
 
 class Platform:
-    def __init__(self, x = 600, y = ):
-        self.x, self.y =
+    def __init__(self, x = 600, y = 65+117):
+        self.x, self.y = x, y
+        self.image = load_image('resources/mushroom_platform2.png')
+
+    def update(self):
+        pass
+
+    def draw(self):
+        self.image.draw(self.x, self.y)
+
 def enter():
     global Mario, BG
     global MONSTERS, FB, FB2
+    global PF
     Mario = Character()
     BG = Background()
     MONSTERS.append(Goomba())
@@ -228,12 +238,13 @@ def enter():
         dir = random.randint(0, 1)
         MONSTERS.append(Killer(x, y, dir))
     FB = Firebar()
-    FB2 = Firebar(218+200,340,1)
-    BG.set('resources/Background1.png')
+    FB2 = Firebar(218+200, 340, 1)
+    PF = Platform()
+    BG.set('resources/Background2.png')
 
 
 def exit():
-    global Mario, BG
+    global Mario, BG, PF
     global MONSTERS
     global FB, FB2
     del (Mario)
@@ -242,6 +253,7 @@ def exit():
         del(monster)
     del(FB)
     del(FB2)
+    del(PF)
 
 
 def pause():
@@ -293,9 +305,11 @@ def update():
     FB.update()
     FB2.update()
 
+
 def draw():
     clear_canvas()
     BG.draw()
+    PF.draw()
     for monsters in MONSTERS:
         monsters.draw()
     Mario.draw()
