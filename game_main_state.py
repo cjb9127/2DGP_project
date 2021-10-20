@@ -116,12 +116,10 @@ class Monster:
         self.speed = None
         self.image = None
         self.frame = None
+        self.alive = True
 
     def update(self):
-        if self.x > Width:
-            self.x = Width
-        elif self.x < 0:
-            self.x = 0
+        pass
 
     def draw(self):
         pass
@@ -134,6 +132,7 @@ class Goomba(Monster):
         self.speed = 3
         self.image = load_image('resources/goomba.png')
         self.frame = 0
+        self.alive = True
 
     def update(self):
         self.x += (self.speed * self.dir)
@@ -158,13 +157,14 @@ class Killer(Monster):
         self.dir = dir
         self.speed = 2
         self.image = load_image('resources/killer.png')
+        self.alive = True
 
     def update(self):
         self.x += self.speed * self.dir
-        if self.x > Width + 25:
-            pass  # 대포가 넘어가면 삭제
-        elif self.x < -25:
-            pass
+        if self.x > Width + 25 and self.dir == 1: # 대포가 넘어가면 삭제
+            self.alive = False
+        elif self.x < -25 and self.dir == -1:
+            self.alive = False
 
     def draw(self):
         if self.dir == -1:
@@ -189,6 +189,7 @@ def exit():
     del (BG)
     for monster in MONSTERS:
         del(monster)
+
 
 def pause():
     pass
@@ -226,8 +227,11 @@ def handle_events():  # 조작 이벤트
 
 def update():
     Mario.update()
-    for monsters in MONSTERS:
-        monsters.update()
+    for i in range(0, len(MONSTERS)):
+        if not MONSTERS[i].alive:
+            del MONSTERS[i]
+        else:
+            MONSTERS[i].update()
 
 
 def draw():
