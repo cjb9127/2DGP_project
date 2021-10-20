@@ -10,6 +10,7 @@ name = "MainState"
 
 BG = None
 Mario = None
+MONSTERS = []
 font = None  # font는 뭔지 아직 모름
 
 # for move left and right
@@ -21,6 +22,7 @@ is_jumping = 0
 velocity = 5
 mass = 2
 
+# 117
 
 # Game object
 class Background:
@@ -43,19 +45,18 @@ class Character:
         self.frame = 0
         self.dir = direction
         self.isMoving = is_moving
-
+        self.speed = 5
         self.m = mass
         self.v = velocity
         self.isJump = 0
 
     def update(self):
-        global max_of_jump
         self.isMoving = is_moving
         self.dir = direction
         self.isJump = is_jumping
         self.frame = (self.frame + 1) % 3  # 프레임 갯수
 
-        self.x += 5.5 * self.isMoving
+        self.x += self.speed * self.isMoving
         if self.x > Width:
             self.x = Width
         elif self.x < 0:
@@ -108,10 +109,54 @@ class Character:
                 self.image.clip_draw(0, 51, 40, 50, self.x, self.y)
 
 
+class Monster:
+    def __init__(self):
+        self.x, self.y = None, None
+        self.dir = None
+        self.speed = None
+        self.image = None
+        self.frame = None
+
+    def update(self):
+        if self.x > Width:
+            self.x = Width
+        elif self.x < 0:
+            self.x = 0
+
+    def draw(self):
+        pass
+
+
+class Goomba(Monster):
+    def __init__(self, x = -100, y = 117, dir = 1):
+        self.x, self.y = x, y
+        self.dir = dir
+        self.speed = 3
+        self.image = load_image('resources/goomba.png')
+        self.frame = 0
+
+    def update(self):
+        self.x += (self.speed * self.dir)
+        self.frame = (self.frame + 1) % 20
+        if self.x > Width and self.dir == 1:
+            self.x = Width
+            self.dir = -1
+        elif self.x < 0 and self.dir == -1:
+            self.x = 0
+            self.dir = 1
+
+    def draw(self):
+        if self.frame < 10:
+            self.image.clip_draw(0, 0, 50, 50, self.x, self.y)
+        elif self.frame < 20:
+            self.image.clip_draw(60, 0, 50, 50, self.x, self.y)
+
+
 def enter():
     global Mario, BG
     Mario = Character()
     BG = Background()
+    MONSTERS.append(Goomba())
     BG.set('resources/Background1.png')
 
 
@@ -119,7 +164,8 @@ def exit():
     global Mario, BG
     del (Mario)
     del (BG)
-
+    for monsters in MONSTERS:
+        del(monsters)
 
 def pause():
     pass
@@ -157,11 +203,15 @@ def handle_events():  # 조작 이벤트
 
 def update():
     Mario.update()
+    for monsters in MONSTERS:
+        monsters.update()
 
 
 def draw():
     clear_canvas()
     BG.draw()
+    for monsters in MONSTERS:
+        monsters.draw()
     Mario.draw()
     update_canvas()
 
