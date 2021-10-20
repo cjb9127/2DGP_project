@@ -1,5 +1,5 @@
 import os
-
+import random
 from pico2d import *
 
 import game_framework
@@ -152,7 +152,12 @@ class Goomba(Monster):
 
 
 class Killer(Monster):
-    def __init__(self, x=900, y=410, dir=-1):
+    def __init__(self, x = -50, y = 400, dir = 1):
+        if dir == 0:
+            dir = -1
+        else:
+            x = random.randint(-400, 0)
+
         self.x, self.y = x, y
         self.dir = dir
         self.speed = 2
@@ -175,10 +180,15 @@ class Killer(Monster):
 
 def enter():
     global Mario, BG
+    global MONSTERS
     Mario = Character()
     BG = Background()
     MONSTERS.append(Goomba())
-    MONSTERS.append(Killer())
+    for _ in range(0,4):
+        x = random.randint(800, 1200)
+        y = random.randint(300, 550)
+        dir = random.randint(0, 1)
+        MONSTERS.append(Killer(x, y, dir))
     BG.set('resources/Background1.png')
 
 
@@ -226,12 +236,16 @@ def handle_events():  # 조작 이벤트
 
 
 def update():
+    index = []
     Mario.update()
     for i in range(0, len(MONSTERS)):
         if not MONSTERS[i].alive:
-            del MONSTERS[i]
+            index.append(i)
         else:
             MONSTERS[i].update()
+
+    for i in index:
+        del MONSTERS[i]
 
 
 def draw():
