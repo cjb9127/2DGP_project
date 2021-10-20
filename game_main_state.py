@@ -10,14 +10,16 @@ name = "MainState"
 
 BG = None
 Mario = None
-font = None
+font = None  # font는 뭔지 아직 모름
 
-state = 0  # idle = 0, moving = -1, 1
+# for move left and right
+is_moving = 0  # idle = 0, moving = -1, 1
 direction = 0  # left = -1, right = 1
 
-is_jumping = False
-is_bottom = True
-Max_jump = 210 - 20
+# for jump
+is_jumping = 0
+velocity = 5
+mass = 2
 
 
 # Game object
@@ -40,50 +42,65 @@ class Character:
         self.x, self.y = Width // 2, 117
         self.frame = 0
         self.dir = direction
-        self.state = state
+        self.isMoving = is_moving
+
+        self.m = mass
+        self.v = velocity
+        self.isJump = 0
 
     def update(self):
-        self.state = state
+        global max_of_jump
+        self.isMoving = is_moving
         self.dir = direction
+        self.isJump = is_jumping
         self.frame = (self.frame + 1) % 3  # 프레임 갯수
 
-        self.x += 5 * self.state
+        self.x += 5.5 * self.isMoving
         if self.x > Width:
             self.x = Width
         elif self.x < 0:
             self.x = 0
-        self.jump()
+        if is_jumping == 1:
+            self.jump()
 
     def jump(self):
-        global is_jumping, is_bottom
-        if is_jumping:
-            self.y += 7
-        elif not is_jumping and not is_bottom:
-            self.y -= 7
+        global is_jumping
 
-        if is_jumping and self.y >= (Max_jump + 118):
-            is_jumping = False
+        if self.isJump > 0:
+            if self.v > 0:
+                force = (0.5 * self.m * (self.v * self.v))
+            else:
+                force = -(0.5 * self.m * (self.v * self.v))
 
-        if not is_bottom and self.y <= 118:
-            is_bottom = True
-            self.y = 117
+            self.y += round(force)
+            self.v -= 0.25  # 점프 높이를 결정하는 v
+
+            if self.y <= 117:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
+                self.y = 117
+                is_jumping = 0
+                self.v = velocity
 
     def draw(self):  # 이미지 클립
-        if self.state == -1:  # 왼쪽 달리기 중
+        if self.isJump != 0:
+            if self.dir == -1:
+                self.image.clip_draw(300, 51, 48, 50, self.x, self.y)
+            elif self.dir == 1:
+                self.image.clip_draw(60, 51, 48, 50, self.x, self.y)
+        elif self.isMoving == -1:  # 왼쪽 달리기 중
             if self.frame == 0:
                 self.image.clip_draw(300 + self.frame * 60, 0, 49, 50, self.x, self.y)
             elif self.frame == 1:
                 self.image.clip_draw(300 + self.frame * 60, 0, 37, 50, self.x, self.y)
             elif self.frame == 2:
                 self.image.clip_draw(300 + self.frame * 60, 0, 43, 50, self.x, self.y)
-        elif self.state == 1:  # 오른쪽 달리기 중
+        elif self.isMoving == 1:  # 오른쪽 달리기 중
             if self.frame == 0:
                 self.image.clip_draw(60 + self.frame * 60, 0, 49, 50, self.x, self.y)
             elif self.frame == 1:
                 self.image.clip_draw(60 + self.frame * 60, 0, 37, 50, self.x, self.y)
             elif self.frame == 2:
                 self.image.clip_draw(60 + self.frame * 60, 0, 43, 50, self.x, self.y)
-        elif self.state == 0:
+        elif self.isMoving == 0:
             if self.dir == -1:  # 왼쪽을 보고 멈춰 있음
                 self.image.clip_draw(0 + 240, 51, 40, 50, self.x, self.y)
             else:  # elif self.dir == 1:
@@ -113,8 +130,8 @@ def resume():
 
 
 def handle_events():  # 조작 이벤트
-    global state, direction  # 좌우 이동
-    global is_jumping, is_bottom  # 점프
+    global is_moving, direction  # 좌우 이동
+    global is_jumping  # 점프
 
     events = get_events()
     for event in events:
@@ -125,19 +142,17 @@ def handle_events():  # 조작 이벤트
                 game_framework.quit()
             elif event.key == SDLK_LEFT:  # 왼쪽 키를 누르면
                 direction = -1
-                state -= 1
+                is_moving -= 1
             elif event.key == SDLK_RIGHT:  # 오른쪽 키
                 direction = 1
-                state += 1
-            elif event.key == SDLK_UP:  # 위 키
-                if is_bottom:
-                    is_jumping = True
-                    is_bottom = False
+                is_moving += 1
+            elif event.key == SDLK_UP and is_jumping == 0:  # 위 키
+                is_jumping = 1
         elif event.type == SDL_KEYUP:  # 키를 땔 때 이벤트
             if event.key == SDLK_LEFT:
-                state += 1
+                is_moving += 1
             elif event.key == SDLK_RIGHT:
-                state -= 1
+                is_moving -= 1
 
 
 def update():
