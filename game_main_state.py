@@ -133,7 +133,7 @@ class Goomba(Monster):
     def __init__(self, x = -100, y = 122, dir = 1):
         self.x, self.y = x, y
         self.dir = dir
-        self.speed = 3
+        self.speed = 1.5
         self.image = load_image('resources/goomba.png')
         self.frame = 0
         self.alive = True
@@ -164,7 +164,7 @@ class Killer(Monster):
 
         self.x, self.y = x, y
         self.dir = dir
-        self.speed = 2
+        self.speed = 1
         self.image = load_image('resources/killer.png')
         self.alive = True
 
