@@ -45,11 +45,13 @@ class Background:
 class Character:
     def __init__(self):
         self.image = load_image('resources/mario.png')  # 이미지 이름
-        self.x, self.y = Width // 2, 122
+        self.x, self.y = Width // 2, 125
+        self.lx, self.rx = self.x - 20, self.x + 20
+        self.by, self.ty = self.y - 25, self.y + 25
         self.frame = 0
         self.dir = direction
         self.isMoving = is_moving
-        self.speed = 5
+        self.speed = 4.5
         self.m = mass
         self.v = velocity
         self.isJump = 0
@@ -61,6 +63,9 @@ class Character:
         self.frame = (self.frame + 1) % 3  # 프레임 갯수
 
         self.x += self.speed * self.isMoving
+        self.lx, self.rx = self.x - 20, self.x + 20
+        self.by, self.ty = self.y - 25, self.y + 25
+
         if self.x > Width:
             self.x = Width
         elif self.x < 0:
@@ -86,6 +91,7 @@ class Character:
                 self.v = velocity
 
     def draw(self):  # 이미지 클립
+        draw_rectangle(self.lx, self.by, self.rx, self.ty)
         if self.isJump != 0:
             if self.dir == -1:
                 self.image.clip_draw(300, 51, 48, 50, self.x, self.y)
@@ -116,6 +122,8 @@ class Character:
 class Monster:
     def __init__(self):
         self.x, self.y = None, None
+        self.lx, self.rx = None, None
+        self.by, self.ty = None, None
         self.dir = None
         self.speed = None
         self.image = None
@@ -126,21 +134,25 @@ class Monster:
         pass
 
     def draw(self):
-        pass
+        draw_rectangle(self.lx,self.by,self.rx,self.ty)
 
 
 class Goomba(Monster):
-    def __init__(self, x = -100, y = 122, dir = 1):
+    def __init__(self, x=-100, y=122, dir=1):
         self.x, self.y = x, y
+        self.lx, self.rx = self.x - 25, self.x + 25
+        self.by, self.ty = self.y - 25, self.y + 25
         self.dir = dir
-        self.speed = 1.5
+        self.speed = 1.25
         self.image = load_image('resources/goomba.png')
         self.frame = 0
         self.alive = True
 
     def update(self):
         self.x += (self.speed * self.dir)
-        self.frame = (self.frame + 1) % 20
+        self.lx, self.rx = self.x - 25, self.x + 25
+        self.by, self.ty = self.y - 25, self.y + 25
+        self.frame = (self.frame + 1) % 60
         if self.x > Width and self.dir == 1:
             self.x = Width
             self.dir = -1
@@ -149,10 +161,11 @@ class Goomba(Monster):
             self.dir = 1
 
     def draw(self):
-        if self.frame < 10:
+        if self.frame < 30:
             self.image.clip_draw(0, 0, 50, 50, self.x, self.y)
-        elif self.frame < 20:
+        elif self.frame < 60:
             self.image.clip_draw(60, 0, 50, 50, self.x, self.y)
+        draw_rectangle(self.lx, self.by, self.rx, self.ty)
 
 
 class Killer(Monster):
@@ -163,6 +176,8 @@ class Killer(Monster):
             x = random.randint(-400, 0)
 
         self.x, self.y = x, y
+        self.lx, self.rx = self.x - 24, self.x + 24
+        self.by, self.ty = self.y - 21, self.y + 21
         self.dir = dir
         self.speed = 1
         self.image = load_image('resources/killer.png')
@@ -170,6 +185,7 @@ class Killer(Monster):
 
     def update(self):
         self.x += self.speed * self.dir
+        self.lx, self.rx = self.x - 24, self.x + 24
         if self.x > Width + 25 and self.dir == 1: # 대포가 넘어가면 삭제
             self.alive = False
         elif self.x < -25 and self.dir == -1:
@@ -180,6 +196,7 @@ class Killer(Monster):
             self.image.clip_draw(0, 0, 49, 43, self.x, self.y)
         elif self.dir == 1:
             self.image.clip_draw(60, 0, 49, 43, self.x, self.y)
+        draw_rectangle(self.lx, self.by, self.rx, self.ty)
 
 
 class Firebar:
@@ -217,6 +234,8 @@ class Firebar:
 class Platform:
     def __init__(self, x = 600, y = 65+117):
         self.x, self.y = x, y
+        self.lx, self.rx = self.x - 82, self.x + 82
+        self.by, self.ty = self.y - 83, self.y + 83
         self.image = load_image('resources/mushroom_platform2.png')
 
     def update(self):
@@ -224,6 +243,7 @@ class Platform:
 
     def draw(self):
         self.image.draw(self.x, self.y)
+        draw_rectangle(self.lx,self.by,self.rx,self.ty)
 
 def enter():
     global Mario, BG
