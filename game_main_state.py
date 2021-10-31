@@ -60,7 +60,7 @@ class Character:
         self.isMoving = is_moving
         self.dir = direction
         self.isJump = is_jumping
-        self.frame = (self.frame + 1) % 3  # 프레임 갯수
+        self.frame = (self.frame + 1) % 12  # 프레임 갯수
 
         self.x += self.speed * self.isMoving
         self.lx, self.rx = self.x - 20, self.x + 20
@@ -98,19 +98,19 @@ class Character:
             elif self.dir == 1:
                 self.image.clip_draw(60, 51, 48, 50, self.x, self.y)
         elif self.isMoving == -1:  # 왼쪽 달리기 중
-            if self.frame == 0:
-                self.image.clip_draw(300 + self.frame * 60, 0, 49, 50, self.x, self.y)
-            elif self.frame == 1:
-                self.image.clip_draw(300 + self.frame * 60, 0, 37, 50, self.x, self.y)
-            elif self.frame == 2:
-                self.image.clip_draw(300 + self.frame * 60, 0, 43, 50, self.x, self.y)
+            if self.frame < 4:
+                self.image.clip_draw(300, 0, 49, 50, self.x, self.y)
+            elif self.frame < 8:
+                self.image.clip_draw(360, 0, 37, 50, self.x, self.y)
+            elif self.frame < 12:
+                self.image.clip_draw(420, 0, 43, 50, self.x, self.y)
         elif self.isMoving == 1:  # 오른쪽 달리기 중
-            if self.frame == 0:
-                self.image.clip_draw(60 + self.frame * 60, 0, 49, 50, self.x, self.y)
-            elif self.frame == 1:
-                self.image.clip_draw(60 + self.frame * 60, 0, 37, 50, self.x, self.y)
-            elif self.frame == 2:
-                self.image.clip_draw(60 + self.frame * 60, 0, 43, 50, self.x, self.y)
+            if self.frame < 4:
+                self.image.clip_draw(60, 0, 49, 50, self.x, self.y)
+            elif self.frame < 8:
+                self.image.clip_draw(120, 0, 37, 50, self.x, self.y)
+            elif self.frame < 12:
+                self.image.clip_draw(180, 0, 43, 50, self.x, self.y)
         elif self.isMoving == 0:
             if self.dir == -1:  # 왼쪽을 보고 멈춰 있음
                 self.image.clip_draw(0 + 240, 51, 40, 50, self.x, self.y)
@@ -235,7 +235,7 @@ class Platform:
     def __init__(self, x = 600, y = 65+117):
         self.x, self.y = x, y
         self.lx, self.rx = self.x - 82, self.x + 82
-        self.by, self.ty = self.y - 83, self.y + 83
+        self.by, self.ty = self.y + 50, self.y + 83
         self.image = load_image('resources/mushroom_platform2.png')
 
     def update(self):
