@@ -14,6 +14,7 @@ Mario = None
 FB = None
 FB2 = None
 PF = None
+Bottom = None
 MONSTERS = []
 font = None
 
@@ -23,6 +24,7 @@ direction = 1  # left = -1, right = 1
 
 # for jump
 is_jumping = 0
+is_falling = 0
 velocity = 5
 mass = 2
 
@@ -55,11 +57,13 @@ class Character:
         self.m = mass
         self.v = velocity
         self.isJump = 0
+        self.isFall = 0
 
     def update(self):
         self.isMoving = is_moving
         self.dir = direction
         self.isJump = is_jumping
+        self.isFall = is_falling
         self.frame = (self.frame + 1) % 12  # 프레임 갯수
 
         self.x += self.speed * self.isMoving
@@ -70,25 +74,64 @@ class Character:
             self.x = Width
         elif self.x < 0:
             self.x = 0
-        if is_jumping == 1:
+        # if (self.rx < PF.lx or self.lx > PF.rx ):
+        #     self.isFall = 1
+        if self.isJump == 1:
             self.jump()
+        elif self.isFall == 1:
+            self.fall()
+        elif (self.rx < PF.lx - 3 or self.lx > PF.rx + 3) and self.y == PF.ty + 25:
+            self.isFall = 1
+            self.v = 0
+            self.fall()
 
     def jump(self):
-        global is_jumping
+        global is_jumping, is_falling
 
-        if self.isJump > 0:
+        if self.isJump > 0 :
             if self.v > 0:
                 force = (0.5 * self.m * (self.v * self.v))
             else:
+                is_jumping = 0
+                is_falling = 1
+                return None
                 force = -(0.5 * self.m * (self.v * self.v))
 
             self.y += round(force)
             self.v -= 0.25  # 점프 높이를 결정하는 v
 
-            if self.y <= 122:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
-                self.y = 122
+            if self.y <= 125:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
+                self.y = 125
                 is_jumping = 0
                 self.v = velocity
+
+    def fall(self):
+        global is_falling
+        # 점프한 뒤에 폴링, 그냥 바닥에서 나왔을때 폴링
+        # 폴링 해제 조건 = self.y <= 125 or self.by가 platform의 ty
+        force = -(0.5 * self.m * (self.v * self.v))
+        if self.y + round(force) <= 125:
+            self.y = 125
+            is_falling = 0
+            self.v = velocity
+        elif (self.rx >= PF.lx and self.lx <= PF.rx) and self.by >= PF.ty:
+            if self.by + round(force) <= PF.ty:
+                self.y = PF.ty + 25
+                is_falling = 0
+                self.v = velocity
+            else:
+                self.y += round(force)
+                self.v -= 0.25
+                is_falling = 1
+        else:
+            self.y += round(force)
+            self.v -= 0.25
+            is_falling = 1
+
+        if self.y <= 125:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
+            self.y = 125
+            is_falling = 0
+            self.v = velocity
 
     def draw(self):  # 이미지 클립
         draw_rectangle(self.lx, self.by, self.rx, self.ty)
@@ -198,10 +241,19 @@ class Killer(Monster):
             self.image.clip_draw(60, 0, 49, 43, self.x, self.y)
         draw_rectangle(self.lx, self.by, self.rx, self.ty)
 
+class Block:
+    def __init__(self, lx, by, rx, ty):
+        self.lx, self.rx = lx, rx
+        self.by, self.ty = by, ty
 
-class Firebar:
+    def draw(self):
+        draw_rectangle(self.lx,self.by,self.rx,self.ty)
+
+class Firebar(Block):
     def __init__(self, x=218, y=340, dir=-1):
         self.x, self.y = x, y
+        self.lx, self.rx = x - 25, x + 25
+        self.by, self.ty = y - 25, y + 25
         self.frame = 0
         self.angle = 0
         self.image = load_image('resources/gray_block.png')
@@ -227,6 +279,7 @@ class Firebar:
     def draw(self):
         dx, dy = math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))
         self.image.draw(self.x, self.y)
+        draw_rectangle(self.lx,self.by,self.rx,self.ty)
         for i in range(0,6):
             self.fire.clip_draw(20 * self.frame, 0, 18, 18, dx * 18 * i + self.x, dy * 18 * i + self.y)
 
@@ -245,12 +298,14 @@ class Platform:
         self.image.draw(self.x, self.y)
         draw_rectangle(self.lx,self.by,self.rx,self.ty)
 
+
 def enter():
     global Mario, BG
     global MONSTERS, FB, FB2
-    global PF
+    global PF, Bottom
     Mario = Character()
     BG = Background()
+    Bottom = Block(0,0,800,100)
     MONSTERS.append(Goomba())
     for _ in range(0,4):
         x = random.randint(800, 1200)
@@ -301,7 +356,7 @@ def handle_events():  # 조작 이벤트
             elif event.key == SDLK_RIGHT:  # 오른쪽 키
                 direction = 1
                 is_moving += 1
-            elif event.key == SDLK_UP and is_jumping == 0:  # 위 키
+            elif event.key == SDLK_UP and is_jumping == 0 and is_falling == 0:  # 위 키
                 is_jumping = 1
         elif event.type == SDL_KEYUP:  # 키를 땔 때 이벤트
             if event.key == SDLK_LEFT:
@@ -329,6 +384,7 @@ def update():
 def draw():
     clear_canvas()
     BG.draw()
+    Bottom.draw()
     PF.draw()
     for monsters in MONSTERS:
         monsters.draw()
