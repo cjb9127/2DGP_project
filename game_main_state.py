@@ -76,6 +76,7 @@ class Character:
             self.x = 0
         # if (self.rx < PF.lx or self.lx > PF.rx ):
         #     self.isFall = 1
+
         if self.isJump == 1:
             self.jump()
         elif self.isFall == 1:
@@ -99,18 +100,24 @@ class Character:
         return bbb
 
     def collid_y(self):
-        for block_list in BLOCKS:
-            if str(type(block_list)) == "<class 'list'>":
-                for block in block_list:
-                    if (self.rx < block.lx - 3 or self.lx > block.rx + 3) and self.y == block.ty + 25:
-                        self.isFall = 1
-                        self.v = 0
-                        self.fall()
-            else:
-                if (self.rx < block_list.lx - 3 or self.lx > block_list.rx + 3) and self.y == block_list.ty + 25:
-                    self.isFall = 1
-                    self.v = 0
-                    self.fall()
+        global is_falling
+        B = self.check_blocks()
+        BB = None
+        if not B:
+            return None
+        else:
+            for block in B:
+                if self.rx >= block.lx and self.lx <= block.rx and self.by >= block.ty:
+                    if BB == None:
+                        BB = block
+                    elif block.ty > BB.ty:
+                        BB = block
+
+        if self.y > BB.ty and self.y != BB.ty + 25 and self.v == velocity:
+            self.v = 0
+            is_falling = 1
+
+        return BB
 
     def jump(self):
         global is_jumping, is_falling
@@ -134,31 +141,22 @@ class Character:
 
     def fall(self):
         global is_falling
-        # 점프한 뒤에 폴링, 그냥 바닥에서 나왔을때 폴링
-        # 폴링 해제 조건 = self.y <= 125 or self.by가 platform의 ty
+
         force = -(0.5 * self.m * (self.v * self.v))
-        if self.y + round(force) <= 125:  # 바닥에 뚝
+        bb = self.collid_y()
+        if self.y + round(force) <= 125:  # 바닥에 붙음
             self.y = 125
             is_falling = 0
             self.v = velocity
-        elif (self.rx >= PF.lx and self.lx <= PF.rx) and self.by >= PF.ty:  # 플랫폼 x사이, y값 더 위에
-            if self.by + round(force) <= PF.ty:  # 플랫폼 바닥에 뚝
-                self.y = PF.ty + 25
+        elif (self.rx >= bb.lx and self.lx <= bb.rx) and self.by >= bb.ty:  # 플랫폼 x사이, y값 더 위에
+            if self.by + round(force) <= bb.ty:  # 플랫폼 바닥에 붙음
+                self.y = bb.ty + 25
                 is_falling = 0
                 self.v = velocity
             else:
                 self.y += round(force)  # 그냥 자유낙하 중
                 self.v -= 0.25
                 is_falling = 1
-        else:
-            self.y += round(force)  # 그냥 자유낙하 중
-            self.v -= 0.25
-            is_falling = 1
-
-        # if self.y <= 125:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
-        #     self.y = 125
-        #     is_falling = 0
-        #     self.v = velocity
 
     def draw(self):  # 이미지 클립
         draw_rectangle(self.lx, self.by, self.rx, self.ty)
@@ -411,16 +409,12 @@ def handle_events():  # 조작 이벤트
 
 
 def update():
-    index = []
     Mario.update()
-    for i in range(0, len(MONSTERS)):
-        if not MONSTERS[i].alive:
-            index.append(i)
+    for monster in MONSTERS[:]:
+        if not monster.alive:
+            MONSTERS.remove(monster)
         else:
-            MONSTERS[i].update()
-
-    for i in index:
-        del MONSTERS[i]
+            monster.update()
 
     for FB in FBS:
         FB.update()
