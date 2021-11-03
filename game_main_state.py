@@ -83,6 +83,21 @@ class Character:
         else:
             self.collid_y()
 
+    def check_blocks(self):
+        bbb = []
+        for block_list in BLOCKS:
+            if str(type(block_list)) == "<class 'list'>":
+                for block in block_list:
+                    if (block.ty >= self.by - 75 and block.by <= self.ty + 75) or \
+                            (block.rx >= self.lx - 75 and block.lx <= self.rx + 75):
+                        bbb.append(block)
+            else:
+                if (block_list.ty >= self.by - 75 and block_list.by <= self.ty + 75) or \
+                        (block_list.rx >= self.lx - 75 and block_list.lx <= self.rx + 75):
+                        bbb.append(block_list)
+
+        return bbb
+
     def collid_y(self):
         for block_list in BLOCKS:
             if str(type(block_list)) == "<class 'list'>":
