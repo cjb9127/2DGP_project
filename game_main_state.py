@@ -11,12 +11,12 @@ name = "MainState"
 
 BG = None
 Mario = None
-FB = None
-FB2 = None
 PF = None
 Bottom = None
+FBS = []
 MONSTERS = []
 font = None
+BLOCKS = []
 
 # for move left and right
 is_moving = 0  # idle = 0, moving = -1, 1
@@ -80,15 +80,27 @@ class Character:
             self.jump()
         elif self.isFall == 1:
             self.fall()
-        elif (self.rx < PF.lx - 3 or self.lx > PF.rx + 3) and self.y == PF.ty + 25:
-            self.isFall = 1
-            self.v = 0
-            self.fall()
+        else:
+            self.collid_y()
+
+    def collid_y(self):
+        for block_list in BLOCKS:
+            if str(type(block_list)) == "<class 'list'>":
+                for block in block_list:
+                    if (self.rx < block.lx - 3 or self.lx > block.rx + 3) and self.y == block.ty + 25:
+                        self.isFall = 1
+                        self.v = 0
+                        self.fall()
+            else:
+                if (self.rx < block_list.lx - 3 or self.lx > block_list.rx + 3) and self.y == block_list.ty + 25:
+                    self.isFall = 1
+                    self.v = 0
+                    self.fall()
 
     def jump(self):
         global is_jumping, is_falling
 
-        if self.isJump > 0 :
+        if self.isJump > 0:
             if self.v > 0:
                 force = (0.5 * self.m * (self.v * self.v))
             else:
@@ -110,28 +122,28 @@ class Character:
         # 점프한 뒤에 폴링, 그냥 바닥에서 나왔을때 폴링
         # 폴링 해제 조건 = self.y <= 125 or self.by가 platform의 ty
         force = -(0.5 * self.m * (self.v * self.v))
-        if self.y + round(force) <= 125:
+        if self.y + round(force) <= 125:  # 바닥에 뚝
             self.y = 125
             is_falling = 0
             self.v = velocity
-        elif (self.rx >= PF.lx and self.lx <= PF.rx) and self.by >= PF.ty:
-            if self.by + round(force) <= PF.ty:
+        elif (self.rx >= PF.lx and self.lx <= PF.rx) and self.by >= PF.ty:  # 플랫폼 x사이, y값 더 위에
+            if self.by + round(force) <= PF.ty:  # 플랫폼 바닥에 뚝
                 self.y = PF.ty + 25
                 is_falling = 0
                 self.v = velocity
             else:
-                self.y += round(force)
+                self.y += round(force)  # 그냥 자유낙하 중
                 self.v -= 0.25
                 is_falling = 1
         else:
-            self.y += round(force)
+            self.y += round(force)  # 그냥 자유낙하 중
             self.v -= 0.25
             is_falling = 1
 
-        if self.y <= 125:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
-            self.y = 125
-            is_falling = 0
-            self.v = velocity
+        # if self.y <= 125:  # 임시로 바닥 높이에 닿으면 점프 멈추게 했음
+        #     self.y = 125
+        #     is_falling = 0
+        #     self.v = velocity
 
     def draw(self):  # 이미지 클립
         draw_rectangle(self.lx, self.by, self.rx, self.ty)
@@ -218,6 +230,7 @@ class Goomba(Monster):
 class Killer(Monster):
 
     image = None
+
     def __init__(self, x = -50, y = 400, dir = 1):
         if dir == 0:
             dir = -1
@@ -248,6 +261,7 @@ class Killer(Monster):
             self.image.clip_draw(60, 0, 49, 43, self.x, self.y)
         draw_rectangle(self.lx, self.by, self.rx, self.ty)
 
+
 class Block:
     def __init__(self, lx, by, rx, ty):
         self.lx, self.rx = lx, rx
@@ -255,6 +269,7 @@ class Block:
 
     def draw(self):
         draw_rectangle(self.lx,self.by,self.rx,self.ty)
+
 
 class Firebar(Block):
 
@@ -297,7 +312,7 @@ class Firebar(Block):
             self.fire.clip_draw(20 * self.frame, 0, 18, 18, dx * 18 * i + self.x, dy * 18 * i + self.y)
 
 
-class Platform:
+class Platform(Block):
     def __init__(self, x = 600, y = 65+117):
         self.x, self.y = x, y
         self.lx, self.rx = self.x - 82, self.x + 82
@@ -314,8 +329,9 @@ class Platform:
 
 def enter():
     global Mario, BG
-    global MONSTERS, FB, FB2
+    global MONSTERS, FBS
     global PF, Bottom
+    global BLOCKS
     Mario = Character()
     BG = Background()
     Bottom = Block(0,0,800,100)
@@ -325,22 +341,23 @@ def enter():
         y = random.randint(300, 550)
         dir = random.randint(0, 1)
         MONSTERS.append(Killer(x, y, dir))
-    FB = Firebar()
-    FB2 = Firebar(218+200, 340, 1)
+
+    FBS = [Firebar(), Firebar(218+200, 340, 1)]
     PF = Platform()
+    BLOCKS = [Bottom, FBS, PF]
     BG.set('resources/Background2.png')
 
 
 def exit():
     global Mario, BG, PF
     global MONSTERS
-    global FB, FB2
+    global FBS
     del (Mario)
     del (BG)
     for monster in MONSTERS:
         del(monster)
-    del(FB)
-    del(FB2)
+    for FB in FBS:
+        del(FB)
     del(PF)
 
 
@@ -390,8 +407,8 @@ def update():
     for i in index:
         del MONSTERS[i]
 
-    FB.update()
-    FB2.update()
+    for FB in FBS:
+        FB.update()
 
 
 def draw():
@@ -402,8 +419,8 @@ def draw():
     for monsters in MONSTERS:
         monsters.draw()
     Mario.draw()
-    FB.draw()
-    FB2.draw()
+    for FB in FBS:
+        FB.draw()
     update_canvas()
 
 
