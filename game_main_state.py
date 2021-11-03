@@ -64,7 +64,7 @@ class Character:
         self.dir = direction
         self.isJump = is_jumping
         self.isFall = is_falling
-        self.frame = (self.frame + 1) % 12  # 프레임 갯수
+        self.frame = (self.frame + 1) % 15  # 프레임 갯수
 
         self.x += self.speed * self.isMoving
         self.lx, self.rx = self.x - 20, self.x + 20
@@ -153,18 +153,18 @@ class Character:
             elif self.dir == 1:
                 self.image.clip_draw(60, 51, 48, 50, self.x, self.y)
         elif self.isMoving == -1:  # 왼쪽 달리기 중
-            if self.frame < 4:
+            if self.frame < 5:
                 self.image.clip_draw(300, 0, 49, 50, self.x, self.y)
-            elif self.frame < 8:
+            elif self.frame < 10:
                 self.image.clip_draw(360, 0, 37, 50, self.x, self.y)
-            elif self.frame < 12:
+            elif self.frame < 15:
                 self.image.clip_draw(420, 0, 43, 50, self.x, self.y)
         elif self.isMoving == 1:  # 오른쪽 달리기 중
-            if self.frame < 4:
+            if self.frame < 5:
                 self.image.clip_draw(60, 0, 49, 50, self.x, self.y)
-            elif self.frame < 8:
+            elif self.frame < 10:
                 self.image.clip_draw(120, 0, 37, 50, self.x, self.y)
-            elif self.frame < 12:
+            elif self.frame < 15:
                 self.image.clip_draw(180, 0, 43, 50, self.x, self.y)
         elif self.isMoving == 0:
             if self.dir == -1:  # 왼쪽을 보고 멈춰 있음
