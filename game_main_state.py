@@ -135,7 +135,7 @@ class Character:
 
     def draw(self):  # 이미지 클립
         draw_rectangle(self.lx, self.by, self.rx, self.ty)
-        if self.isJump != 0:
+        if self.isJump != 0 or self.isFall != 0:
             if self.dir == -1:
                 self.image.clip_draw(300, 51, 48, 50, self.x, self.y)
             elif self.dir == 1:
@@ -181,13 +181,17 @@ class Monster:
 
 
 class Goomba(Monster):
+
+    image = None
+
     def __init__(self, x=-100, y=122, dir=1):
         self.x, self.y = x, y
         self.lx, self.rx = self.x - 25, self.x + 25
         self.by, self.ty = self.y - 25, self.y + 25
         self.dir = dir
         self.speed = 1.25
-        self.image = load_image('resources/goomba.png')
+        if Goomba.image == None:
+            Goomba.image = load_image('resources/goomba.png')
         self.frame = 0
         self.alive = True
 
@@ -212,6 +216,8 @@ class Goomba(Monster):
 
 
 class Killer(Monster):
+
+    image = None
     def __init__(self, x = -50, y = 400, dir = 1):
         if dir == 0:
             dir = -1
@@ -223,7 +229,8 @@ class Killer(Monster):
         self.by, self.ty = self.y - 21, self.y + 21
         self.dir = dir
         self.speed = 1
-        self.image = load_image('resources/killer.png')
+        if Killer.image == None:
+            Killer.image = load_image('resources/killer.png')
         self.alive = True
 
     def update(self):
@@ -250,14 +257,20 @@ class Block:
         draw_rectangle(self.lx,self.by,self.rx,self.ty)
 
 class Firebar(Block):
+
+    image = None
+    fire = None
+
     def __init__(self, x=218, y=340, dir=-1):
         self.x, self.y = x, y
         self.lx, self.rx = x - 25, x + 25
         self.by, self.ty = y - 25, y + 25
         self.frame = 0
         self.angle = 0
-        self.image = load_image('resources/gray_block.png')
-        self.fire = load_image('resources/fire.png')
+        if Firebar.image == None:
+            Firebar.image = load_image('resources/gray_block.png')
+        if Firebar.fire == None:
+            Firebar.fire = load_image('resources/fire.png')
         self.dir = dir
         self.cnt = 0
 
