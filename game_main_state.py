@@ -21,12 +21,12 @@ def enter():
     global Mario, BG
     Mario = Character()
     BG = Background()
+    game_world.add_object(BG, 0)
+    game_world.add_object(Mario, 1)
 
 
 def exit():
-    global Mario, BG
-    del Mario
-    del BG
+    game_world.clear()
 
 
 def pause():
@@ -49,13 +49,14 @@ def handle_events():  # 조작 이벤트
 
 
 def update():
-    Mario.update()
+    for game_object in game_world.all_objects():
+        game_object.update()
 
 
 def draw():
     clear_canvas()
-    BG.draw()
-    Mario.draw()
+    for game_object in game_world.all_objects():
+        game_object.draw()
     update_canvas()
 
 

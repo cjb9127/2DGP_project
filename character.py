@@ -11,6 +11,7 @@ key_event_table = {
     (SDL_KEYUP, SDLK_LEFT): LEFT_UP
 }
 
+
 class IdleState:
 
     def enter(mario, event):
@@ -29,10 +30,10 @@ class IdleState:
     def do(mario):
         mario.frame = (mario.frame + 1) % 15
 
+
 class RunState:
 
     def enter(mario, event):
-        print('Run, ', event)
         if event == RIGHT_DOWN:
             mario.vx += 1
         elif event == LEFT_DOWN:
@@ -102,10 +103,10 @@ class Character:
                 self.image.clip_draw(0 + 240, 51, 40, 50, self.x, self.y)
             else:  # 오른쪽을 보고 멈춰있음
                 self.image.clip_draw(0, 51, 40, 50, self.x, self.y)
-        debug_print('Velocity :' + str(self.vx) + '  Dir:' + str(self.dir))
+        # debug_print('Velocity :' + str(self.vx) + '  Dir:' + str(self.dir))
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
             key_event = key_event_table[(event.type, event.key)]
-            print(event.type, event.key)
+            # print(event.type, event.key)
             self.add_event(key_event)

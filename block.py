@@ -8,6 +8,8 @@ class Block:
     def draw(self):
         draw_rectangle(self.lx,self.by,self.rx,self.ty)
 
+    def update(self):
+        pass
 
 class Firebar(Block):
 

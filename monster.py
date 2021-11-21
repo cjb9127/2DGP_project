@@ -14,7 +14,8 @@ class Monster:
         self.alive = True
 
     def update(self):
-        pass
+        if self.x < 0 or self.x > 800:
+            game_world.remove_object(self)
 
     def draw(self):
         draw_rectangle(self.lx,self.by,self.rx,self.ty)
