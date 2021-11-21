@@ -15,10 +15,10 @@ key_event_table = {
 
 # Run Speed
 PiXEL_PER_METER = (10.0 / 0.3)  # 10 픽셀이 30 센티미터
-RUN_SPEED_KMPH = 20.0  # 달리기 속도 시속 km/s
+RUN_SPEED_KMPH = 25.0  # 달리기 속도 시속 km/s
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)  # 달리기 속도 분속 (미터/분)
-RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0) # 달리기 속도 초속 (미터/세컨드)
-RUN_SPEED_PPS = (RUN_SPEED_MPS * PiXEL_PER_METER) # 달리기 속도 초속(픽셀/세컨드)
+RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)  # 달리기 속도 초속 (미터/세컨드)
+RUN_SPEED_PPS = (RUN_SPEED_MPS * PiXEL_PER_METER)  # 달리기 속도 초속(픽셀/세컨드)
 
 # Action Speed
 TIME_PER_ACTION = 0.5
@@ -70,13 +70,23 @@ class RunState:
         mario.x += mario.vx * game_framework.frame_time
         mario.x = clamp(25, mario.x, 800 - 25)
 
-    @staticmethod
+    # @staticmethod
     def draw(mario):
+        Frame = int(mario.frame)
         if mario.dir < 0:  # 왼쪽 달리기 중
-            mario.image.clip_draw(300 + int(mario.frame) * 60, 0, 49, 50, mario.x, mario.y)
+            if Frame == 0:
+                mario.image.clip_draw(300, 0, 49, 50, mario.x, mario.y)
+            elif Frame == 1:
+                mario.image.clip_draw(360, 0, 37, 50, mario.x, mario.y)
+            elif Frame == 2:
+                mario.image.clip_draw(420, 0, 43, 50, mario.x, mario.y)
         else:  # 오른쪽 달리기 중
-            mario.image.clip_draw(60 + int(mario.frame) * 60, 0, 49, 50, mario.x, mario.y)
-
+            if Frame == 0:
+                mario.image.clip_draw(60, 0, 49, 50, mario.x, mario.y)
+            elif Frame == 1:
+                mario.image.clip_draw(120, 0, 37, 50, mario.x, mario.y)
+            elif Frame == 2:
+                mario.image.clip_draw(180, 0, 43, 50, mario.x, mario.y)
 
 
 next_state_table = {
