@@ -1,4 +1,6 @@
 from pico2d import *
+
+import game_framework
 from game_world import objects
 
 # character event
@@ -11,46 +13,70 @@ key_event_table = {
     (SDL_KEYUP, SDLK_LEFT): LEFT_UP
 }
 
+# Run Speed
+PiXEL_PER_METER = (10.0 / 0.3)  # 10 픽셀이 30 센티미터
+RUN_SPEED_KMPH = 20.0  # 달리기 속도 시속 km/s
+RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)  # 달리기 속도 분속 (미터/분)
+RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0) # 달리기 속도 초속 (미터/세컨드)
+RUN_SPEED_PPS = (RUN_SPEED_MPS * PiXEL_PER_METER) # 달리기 속도 초속(픽셀/세컨드)
 
+# Action Speed
+TIME_PER_ACTION = 0.5
+ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+FRAMES_PER_ACTION = 12
 class IdleState:
 
     def enter(mario, event):
         if event == RIGHT_DOWN:
-            mario.vx += 1
+            mario.vx += RUN_SPEED_PPS
         elif event == LEFT_DOWN:
-            mario.vx -= 1
+            mario.vx -= RUN_SPEED_PPS
         elif event == RIGHT_UP:
-            mario.vx -= 1
+            mario.vx -= RUN_SPEED_PPS
         elif event == LEFT_UP:
-            mario.vx += 1
+            mario.vx += RUN_SPEED_PPS
 
     def exit(mario, event):
         pass
 
     def do(mario):
-        mario.frame = (mario.frame + 1) % 15
+        mario.frame = (mario.frame + 1) % 3
 
+    def draw(mario):
+        if mario.dir < 0:  # 왼쪽을 보고 멈춰 있음
+            mario.image.clip_draw(240, 51, 40, 50, mario.x, mario.y)
+        else:  # 오른쪽을 보고 멈춰있음
+            mario.image.clip_draw(0, 51, 40, 50, mario.x, mario.y)
 
 class RunState:
 
     def enter(mario, event):
         if event == RIGHT_DOWN:
-            mario.vx += 1
+            mario.vx += RUN_SPEED_PPS
         elif event == LEFT_DOWN:
-            mario.vx -= 1
+            mario.vx -= RUN_SPEED_PPS
         elif event == RIGHT_UP:
-            mario.vx -= 1
+            mario.vx -= RUN_SPEED_PPS
         elif event == LEFT_UP:
-            mario.vx += 1
-        mario.dir = mario.vx
+            mario.vx += RUN_SPEED_PPS
+        mario.dir = clamp(-1, mario.vx, 1)
+        print(RUN_SPEED_PPS)
 
     def exit(mario, event):
         pass
 
     def do(mario):
-        mario.frame = (mario.frame + 1) % 15
-        mario.x += mario.vx
+        mario.frame = (mario.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
+        mario.x += mario.vx * game_framework.frame_time
         mario.x = clamp(25, mario.x, 800 - 25)
+
+    @staticmethod
+    def draw(mario):
+        if mario.dir < 0:  # 왼쪽 달리기 중
+            mario.image.clip_draw(300 + int(mario.frame) * 60, 0, 49, 50, mario.x, mario.y)
+        else:  # 오른쪽 달리기 중
+            mario.image.clip_draw(60 + int(mario.frame) * 60, 0, 49, 50, mario.x, mario.y)
+
 
 
 next_state_table = {
@@ -63,6 +89,7 @@ class Character:
 
     def __init__(self):
         self.image = load_image('resources/mario.png')  # 이미지 이름
+        self.font = load_font('font/나눔손글씨 미니 손글씨.ttf', 36)
         self.x, self.y = 800 // 2, 125
         self.dir = 1
         self.vx = 0
@@ -83,27 +110,8 @@ class Character:
             self.cur_state.enter(self, event)
 
     def draw(self):  # 이미지 클립
-        if str(self.cur_state) == "<class 'character.RunState'>":
-            if self.dir < 0:   # 왼쪽 달리기 중
-                if self.frame < 5:
-                    self.image.clip_draw(300, 0, 49, 50, self.x, self.y)
-                elif self.frame < 10:
-                    self.image.clip_draw(360, 0, 37, 50, self.x, self.y)
-                elif self.frame < 15:
-                    self.image.clip_draw(420, 0, 43, 50, self.x, self.y)
-            elif self.dir >= 0:   # 오른쪽 달리기 중
-                if self.frame < 5:
-                    self.image.clip_draw(60, 0, 49, 50, self.x, self.y)
-                elif self.frame < 10:
-                    self.image.clip_draw(120, 0, 37, 50, self.x, self.y)
-                elif self.frame < 15:
-                    self.image.clip_draw(180, 0, 43, 50, self.x, self.y)
-        elif str(self.cur_state) == "<class 'character.IdleState'>":
-            if self.dir < 0:  # 왼쪽을 보고 멈춰 있음
-                self.image.clip_draw(0 + 240, 51, 40, 50, self.x, self.y)
-            else:  # 오른쪽을 보고 멈춰있음
-                self.image.clip_draw(0, 51, 40, 50, self.x, self.y)
-        # debug_print('Velocity :' + str(self.vx) + '  Dir:' + str(self.dir))
+        self.cur_state.draw(self)
+        self.font.draw(self.x - 60, self.y + 50, '(Time: %3.2f)' % get_time(), (255, 255, 0))
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
