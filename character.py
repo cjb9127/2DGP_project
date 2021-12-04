@@ -24,6 +24,7 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PiXEL_PER_METER)  # 달리기 속도 초속(픽
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 12
+
 class IdleState:
 
     def enter(mario, event):
@@ -92,6 +93,7 @@ class RunState:
 next_state_table = {
     IdleState: {RIGHT_UP: RunState, LEFT_UP: RunState, RIGHT_DOWN: RunState, LEFT_DOWN: RunState},
     RunState: {RIGHT_UP: IdleState, LEFT_UP: IdleState, LEFT_DOWN: IdleState, RIGHT_DOWN: IdleState},
+
 }
 
 
@@ -121,6 +123,7 @@ class Character:
 
     def draw(self):  # 이미지 클립
         self.cur_state.draw(self)
+        draw_rectangle(*self.get_bb())
         self.font.draw(self.x - 60, self.y + 50, '(Time: %3.2f)' % get_time(), (255, 255, 0))
 
     def handle_event(self, event):
@@ -128,3 +131,6 @@ class Character:
             key_event = key_event_table[(event.type, event.key)]
             # print(event.type, event.key)
             self.add_event(key_event)
+
+    def get_bb(self):
+        return (self.x - 25, self.y - 25, self.x + 25, self.y + 25)
